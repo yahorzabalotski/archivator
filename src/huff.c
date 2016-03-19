@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "compress.h"
+#include "decompress.h"
+
 static void print_usage(const char * const name, const char * const compress,
 		const char * const decompress);
 
@@ -21,8 +24,10 @@ int main(int argc, char *argv[])
 
 	if(!strcmp(compress, opt)) {
 		printf("Compress %s to %s ...\n", ifile, ofile);
+		compress_file(ifile, ofile);
 	} else if(!strcmp(decompress, opt)) {
 		printf("Decompress %s to %s ...\n", ifile, ofile);
+		decompress_file(ifile, ofile);	
 	} else {
 		printf("Can't recognized %s option.\n", opt);
 		print_usage(name, compress, decompress);
