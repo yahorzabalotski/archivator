@@ -14,3 +14,4 @@ Session.vim
 tags
 huff 
 build/
+tests/
