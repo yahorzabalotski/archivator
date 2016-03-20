@@ -25,6 +25,20 @@ static int Node_compare(const void *a, const void *b)
 	}
 }
 
+static Node *Node_create(long long amount, int num, Code *code)
+{
+	Node *node = malloc(sizeof(*node));
+	if(node) {
+		*node = (Node){	.left = NULL, 
+						.right = NULL,
+					   	.num = num, 
+						.amount = amount, 
+						.code = code}; 
+	}
+
+	return node;
+}
+
 static Node *create_frequency_nodes(long long *frequency, int size)
 {
 	Node *nodes = malloc(sizeof(*nodes) * size);
@@ -197,10 +211,12 @@ int get_count(Node *root)
 	return 0;
 }
 
-
-
-Code *generate_code(long long *frequency, int size)
+static Code* push_init_nodes(pQueue *pq, long long *frequency, int size)
 {
+	if(pq == NULL) {
+		return NULL;
+	}
+
 	Code *codes = malloc(sizeof(*codes) * size);
 	if(codes == NULL) {
 		log_info("Can't allocate memory.");
@@ -208,20 +224,38 @@ Code *generate_code(long long *frequency, int size)
 	}
 
 	bzero(codes, sizeof(*codes) * size);
-	pQueue *pq = pQueue_create(Node_compare);
-	if(pq) {
-		for(int i = 0; i < size; i++) {
-			if(frequency[i]) {
-				Node *node = malloc(sizeof(*node));
-				node->left = NULL;
-				node->right = NULL;
-				node->amount = frequency[i];
-				node->num = i;
-				node->code = &codes[i];
-				pQueue_push(pq, node);
-			} 	
-		}
 
+	int i = 0;
+	for(; i < size; i++) {
+		if(frequency[i]) {
+			Node *node = Node_create(frequency[i], i, &codes[i]);
+			if(node == NULL) {
+				log_info("Can't allocate memory.");
+				break;
+			}
+
+			pQueue_push(pq, node);
+		} 	
+	}
+
+	if(i != size) {
+		return NULL;
+	}
+
+	return codes;
+}
+
+
+Code *generate_code(long long *frequency, int size)
+{
+
+	pQueue *pq = pQueue_create(Node_compare);
+	if(pq == NULL) {
+		return NULL;
+	}
+	
+	Code *codes = push_init_nodes(pq, frequency, size);
+	if(codes != NULL) {
 		Node *root = build_huffman_tree(pq, size);
 		//print_huffman_tree(root);
 		appropriate_char_code(root, "");
@@ -236,12 +270,15 @@ Node *build_tree(long long *frequency, int size)
 	pQueue *pq = pQueue_create(Node_compare);
 	for(int i = 0; i < size; i++) {
 		if(frequency[i]) {
+			Node *node = Node_create(frequency[i], i, NULL);
+			/*
 			Node *node = malloc(sizeof(*node));
 			node->left = NULL;
 			node->right = NULL;
 			node->amount = frequency[i];
 			node->num = i;
 			node->code = NULL;
+			*/
 			pQueue_push(pq, node);
 		} 	
 	}
