@@ -86,15 +86,21 @@ error:
 
 static Node *build_huffman_tree(pQueue *pq, int size)
 {
-	Node *left = NULL;
-	Node *right = NULL;
+	Node *left = pQueue_pop(pq);
+	if(left == NULL) {
+		return NULL;
+	}
 
-	for(int i = 0; i < size - 1; i++) {
-		left = pQueue_pop(pq);
-		right = pQueue_pop(pq);
+	Node *right = pQueue_pop(pq);
 
+	while(right) {
 		Node *node = malloc(sizeof(*node));
-		node->left = left;
+		if(node == NULL) {
+			log_info("Can't allocate memory.");
+			return NULL;
+		}
+		
+		node->left 	= left;
 		node->right = right;
 
 		node->amount = 0L;
@@ -106,13 +112,11 @@ static Node *build_huffman_tree(pQueue *pq, int size)
 		}
 
 		pQueue_push(pq, node);
-
-		if(!right) {
-			break;
-		}
+		left = pQueue_pop(pq);
+		right = pQueue_pop(pq);
 	}
 
-	return pQueue_pop(pq);
+	return left;
 }
 
 void Code_print(Code *code)
@@ -167,6 +171,7 @@ static void appropriate_char_code(Node *root, char *str)
 	if(root) {
 		if(!root->left && !root->right) {
 			get_code(root->code, str);
+			printf("%c %s\n", root->num, str);
 		}
 		int len = strlen(str);
 		char *new_code = malloc(sizeof(*new_code) * (len + 2));
@@ -248,7 +253,6 @@ static Code* push_init_nodes(pQueue *pq, long long *frequency, int size)
 
 Code *generate_code(long long *frequency, int size)
 {
-
 	pQueue *pq = pQueue_create(Node_compare);
 	if(pq == NULL) {
 		return NULL;
@@ -257,7 +261,7 @@ Code *generate_code(long long *frequency, int size)
 	Code *codes = push_init_nodes(pq, frequency, size);
 	if(codes != NULL) {
 		Node *root = build_huffman_tree(pq, size);
-		//print_huffman_tree(root);
+		print_huffman_tree(root);
 		appropriate_char_code(root, "");
 		delete_huffman_tree(root);
 	}
@@ -271,14 +275,6 @@ Node *build_tree(long long *frequency, int size)
 	for(int i = 0; i < size; i++) {
 		if(frequency[i]) {
 			Node *node = Node_create(frequency[i], i, NULL);
-			/*
-			Node *node = malloc(sizeof(*node));
-			node->left = NULL;
-			node->right = NULL;
-			node->amount = frequency[i];
-			node->num = i;
-			node->code = NULL;
-			*/
 			pQueue_push(pq, node);
 		} 	
 	}
