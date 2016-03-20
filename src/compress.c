@@ -41,6 +41,10 @@ void compress_file(const char *ifile_name, const char *ofile_name)
 static long long *get_frequency(FILE *ifile)
 {
 	long long *frequency = malloc(sizeof(*frequency) * DIFFERENT_SYMBOL);
+	if(frequency == NULL) {
+		log_info("Can't allocate memory.");
+		return NULL;
+	}
 	bzero(frequency, sizeof(*frequency) * DIFFERENT_SYMBOL);
 
 	long pos = ftell(ifile); // save file pointer
