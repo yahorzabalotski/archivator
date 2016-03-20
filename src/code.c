@@ -201,41 +201,38 @@ int get_count(Node *root)
 
 Code *generate_code(long long *frequency, int size)
 {
-	/*
-	Node *nodes = create_frequency_nodes(frequency, size);
-	Code *codes = create_codes(nodes, size);
-	pQueue *pq = push_frequency_nodes(nodes, size);
-	*/
 	Code *codes = malloc(sizeof(*codes) * size);
-	bzero(codes, sizeof(*codes) * size);
-	pQueue *pq = pQueue_create(Node_compare);
-	for(int i = 0; i < size; i++) {
-		if(frequency[i]) {
-			Node *node = malloc(sizeof(*node));
-			node->left = NULL;
-			node->right = NULL;
-			node->amount = frequency[i];
-			node->num = i;
-			node->code = &codes[i];
-			pQueue_push(pq, node);
-		} 	
+	if(codes == NULL) {
+		log_info("Can't allocate memory.");
+		return NULL;
 	}
 
-	Node *root = build_huffman_tree(pq, size);
-	//print_huffman_tree(root);
-	appropriate_char_code(root, "");
-	delete_huffman_tree(root);
-	//free(nodes);
+	bzero(codes, sizeof(*codes) * size);
+	pQueue *pq = pQueue_create(Node_compare);
+	if(pq) {
+		for(int i = 0; i < size; i++) {
+			if(frequency[i]) {
+				Node *node = malloc(sizeof(*node));
+				node->left = NULL;
+				node->right = NULL;
+				node->amount = frequency[i];
+				node->num = i;
+				node->code = &codes[i];
+				pQueue_push(pq, node);
+			} 	
+		}
+
+		Node *root = build_huffman_tree(pq, size);
+		//print_huffman_tree(root);
+		appropriate_char_code(root, "");
+		delete_huffman_tree(root);
+	}
 	pQueue_delete(pq);
 	return codes;
 }
 
 Node *build_tree(long long *frequency, int size)
 {
-	/*
-	Node *nodes = create_frequency_nodes(frequency, size);
-	pQueue *pq = push_frequency_nodes(nodes, size);
-	*/
 	pQueue *pq = pQueue_create(Node_compare);
 	for(int i = 0; i < size; i++) {
 		if(frequency[i]) {

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "dbg.h"
 
 #include "pqueue.h"
 
@@ -20,6 +21,11 @@ static void node_t_delete(node_t *node)
 pQueue *pQueue_create(Compare cmp)
 {
 	pQueue *pq = malloc(sizeof(*pq));
+	if(pq == NULL) {
+		log_info("Can't allocate memory.");
+		return NULL;
+	}
+
 	pq->root = NULL;
 	pq->cmp = cmp;
 
