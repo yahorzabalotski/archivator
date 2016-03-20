@@ -171,7 +171,7 @@ static void appropriate_char_code(Node *root, char *str)
 	if(root) {
 		if(!root->left && !root->right) {
 			get_code(root->code, str);
-			printf("%c %s\n", root->num, str);
+		//	printf("%c %s\n", root->num, str);
 		}
 		int len = strlen(str);
 		char *new_code = malloc(sizeof(*new_code) * (len + 2));
@@ -261,7 +261,7 @@ Code *generate_code(long long *frequency, int size)
 	Code *codes = push_init_nodes(pq, frequency, size);
 	if(codes != NULL) {
 		Node *root = build_huffman_tree(pq, size);
-		print_huffman_tree(root);
+		//print_huffman_tree(root);
 		appropriate_char_code(root, "");
 		delete_huffman_tree(root);
 	}
