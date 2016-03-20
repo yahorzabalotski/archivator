@@ -29,7 +29,6 @@ void compress_file(const char *ifile_name, const char *ofile_name)
 	}
 
 	long long *frequency = get_frequency(ifile);
-	//print_frequency(frequency);
 	if(frequency) {
 		rewind(ifile);
 		encoded_file(frequency, ofile_name, ifile);
