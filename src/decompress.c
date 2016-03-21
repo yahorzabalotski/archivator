@@ -11,7 +11,7 @@
 #define BUFFER_SIZE 1024
 
 static void read_frequency(long long *frequency, FILE *ifile);
-static void decode_file(long long *frequency, FILE *ifile, const char *ofile_name);
+static void decode_file(long long *frequency, FILE *ifile, FILE *ofile);
 
 void decompress_file(const char *ifile_name, const char *ofile_name)
 {
@@ -21,13 +21,22 @@ void decompress_file(const char *ifile_name, const char *ofile_name)
 		return;
 	}
 
+	FILE *ofile = fopen(ofile_name, "w");
+	if(ofile == NULL) {
+		log_info("Can't open '%s' file.", ofile_name);
+		fclose(ifile);
+		return;
+	}
+	
+
 	long long *frequency = malloc(sizeof(*frequency) * DIFFERENT_SYMBOL);
 	if(frequency != NULL) {
 		read_frequency(frequency, ifile);
-		decode_file(frequency, ifile, ofile_name);
+		decode_file(frequency, ifile, ofile);
 		free(frequency);
 	}
 
+	fclose(ofile);
 	fclose(ifile);
 }
 
@@ -54,13 +63,8 @@ static void read_frequency(long long *frequency, FILE *ifile)
 	free(table);
 }
 
-static void decode_file(long long *frequency, FILE *ifile, const char *ofile_name)
+static void decode_file(long long *frequency, FILE *ifile, FILE *ofile)
 {
-	FILE *ofile = fopen(ofile_name, "w");
-	if(ofile == NULL) {
-		log_info("Can't create '%s' file.", ofile_name);
-		return;
-	}
 
 	uint8_t *input_buff = malloc(sizeof(*input_buff) * BUFFER_SIZE);
 	uint8_t *output_buff = malloc(sizeof(*output_buff) * BUFFER_SIZE);
@@ -200,6 +204,4 @@ static void decode_file(long long *frequency, FILE *ifile, const char *ofile_nam
 
 	free(input_buff);
 	free(output_buff);
-
-	fclose(ofile);
 }
