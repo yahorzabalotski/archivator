@@ -40,12 +40,11 @@ void compress_file(const char *ifile_name, const char *ofile_name)
 
 static long long *get_frequency(FILE *ifile)
 {
-	long long *frequency = malloc(sizeof(*frequency) * DIFFERENT_SYMBOL);
+	long long *frequency = calloc(DIFFERENT_SYMBOL, sizeof(*frequency));
 	if(frequency == NULL) {
 		log_info("Can't allocate memory.");
 		return NULL;
 	}
-	bzero(frequency, sizeof(*frequency) * DIFFERENT_SYMBOL);
 
 	long pos = ftell(ifile); // save file pointer
 
@@ -98,11 +97,13 @@ error:
 static void write_frequency(long long *frequency, FILE *ofile)
 {
 	int size = DIFFERENT_SYMBOL / BIT_COUNT;
-	uint8_t *table = malloc(sizeof(*table) * size); 
-	check(table, "Can't allocate memory for bit table.");
-	bzero(table, size);
-	int i = 0;
+	uint8_t *table = calloc(size, sizeof(*table)); 
+	if(table == NULL) {
+		log_info("Can't allocate memory for bit table.");
+		return;
+	}
 
+	int i = 0;
 	for(i = 0; i < size; i++) {
 		for(int j = 0; j < BIT_COUNT; j++) {
 			table[i] <<= 1;
@@ -120,7 +121,6 @@ static void write_frequency(long long *frequency, FILE *ofile)
 		}
 	}
 
-error:
 	free(table);
 }
 

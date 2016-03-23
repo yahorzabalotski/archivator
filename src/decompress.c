@@ -43,11 +43,10 @@ void decompress_file(const char *ifile_name, const char *ofile_name)
 static void read_frequency(long long *frequency, FILE *ifile)
 {
 	int size = DIFFERENT_SYMBOL / BIT_COUNT;
-	uint8_t *table = malloc(sizeof(*table) * size);
+	uint8_t *table = calloc(size, sizeof(*table));
 
 	if(table != NULL) {
 		fread(table, sizeof(*table), size, ifile);
-		bzero(frequency, sizeof(*frequency) * DIFFERENT_SYMBOL);
 
 		uint8_t mask = 0x80;
 		for(int i = 0; i < size; i++) {

@@ -222,13 +222,11 @@ static Code* push_init_nodes(pQueue *pq, long long *frequency, int size)
 		return NULL;
 	}
 
-	Code *codes = malloc(sizeof(*codes) * size);
+	Code *codes = calloc(size, sizeof(*codes));
 	if(codes == NULL) {
 		log_info("Can't allocate memory.");
 		return NULL;
 	}
-
-	bzero(codes, sizeof(*codes) * size);
 
 	int i = 0;
 	for(; i < size; i++) {
