@@ -132,6 +132,8 @@ error:
 static void write_file(Code *code, FILE *ifile, FILE *ofile)
 {
 	long len = get_file_size(ifile);
+	fwrite(&len, sizeof(len), 1, ofile);
+
 	uint8_t temp = 0;
 	uint8_t buff = 0;
 	int shift = BIT_COUNT;
@@ -166,12 +168,13 @@ static void write_file(Code *code, FILE *ifile, FILE *ofile)
 			fwrite(&buff, sizeof(buff), 1, ofile);
 		}
 	}
-
+	/*
 	uint8_t sign_bit = BIT_COUNT - shift;
 	if(shift == BIT_COUNT) {
 		sign_bit = BIT_COUNT;
 	}
 	fwrite(&sign_bit, sizeof(sign_bit), 1, ofile);
+	*/
 }
 // debug function 
 void print_frequency(long long *frequency)
