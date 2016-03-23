@@ -63,145 +63,89 @@ static void read_frequency(long long *frequency, FILE *ifile)
 	free(table);
 }
 
+static long read_buffer(FILE *ifile, uint8_t *buffer, long size)
+{
+	size_t pos = ftell(ifile);
+	fseek(ifile, 0L, SEEK_END);
+	int len = ftell(ifile) - pos;
+
+	long read_count = (size > len) ? (len) : (size);  
+
+	fseek(ifile, pos, SEEK_SET);
+	fread(buffer, sizeof(*buffer), read_count, ifile);
+
+	return read_count;
+}
+
 static void decode_file(long long *frequency, FILE *ifile, FILE *ofile)
 {
-
 	uint8_t *input_buff = malloc(sizeof(*input_buff) * BUFFER_SIZE);
-	uint8_t *output_buff = malloc(sizeof(*output_buff) * BUFFER_SIZE);
-
-	if(input_buff && output_buff) {
-
-		size_t pos = ftell(ifile);
-		fseek(ifile, -1L, SEEK_END); 
-		uint8_t last_bit_count = 0;
-		fread(&last_bit_count, sizeof(last_bit_count), 1, ifile);
-		long len = ftell(ifile) - pos - 2;
-		fseek(ifile, pos, SEEK_SET);
-
-		Node *root = build_tree(frequency, DIFFERENT_SYMBOL);
-		Node *tmp = root;
-
-		uint8_t mask = 0x80;
-		int shift = 0;
-
-		int j = 0;
-		int k = 0;
-		for(int i = 0; i < len / BUFFER_SIZE; i++) {
-			fread(input_buff, sizeof(*input_buff), BUFFER_SIZE, ifile);
-
-			j = 0;
-			while(j < BUFFER_SIZE) {
-				while(tmp->left || tmp->right) {
-					if(input_buff[j] & mask) {
-						tmp = tmp->right;
-					} else {
-						tmp = tmp->left;
-					}
-
-					input_buff[j] <<= 1;
-					++shift;
-
-					if(shift == BIT_COUNT) {
-						shift = 0;
-						j++;
-
-						if(j == BUFFER_SIZE) {
-							break;
-						}
-					}
-				}
-
-				if(!tmp->left && !tmp->right) {
-					output_buff[k] = (uint8_t)tmp->num;
-					tmp = root;
-					++k;
-
-					if(k == BUFFER_SIZE) {
-						fwrite(output_buff, sizeof(*output_buff), BUFFER_SIZE, ofile);
-						k = 0;
-					}
-
-				}
-			}
-		}
-
-		int size = len % BUFFER_SIZE;
-		fread(input_buff, sizeof(*input_buff), size, ifile);
-		j = 0;
-		while(j < size) {
-			while(tmp->left || tmp->right) {
-				if(input_buff[j] & mask) {
-					tmp = tmp->right;
-				} else {
-					tmp = tmp->left;
-				}
-
-
-				input_buff[j] <<= 1;
-				++shift;
-
-				if(shift == BIT_COUNT) {
-					shift = 0;
-					j++;
-
-					if(j == size) {
-						break;
-					}
-				}
-			}
-
-			if(!tmp->left && !tmp->right) {
-				output_buff[k] = (uint8_t)tmp->num;
-				tmp = root;
-				++k;
-
-				if(k == BUFFER_SIZE) {
-					fwrite(output_buff, sizeof(*output_buff), BUFFER_SIZE, ofile);
-					k = 0;
-				}
-
-			}
-		}
-
-		fread(input_buff, sizeof(*input_buff), 1, ifile);
-
-		while(last_bit_count != 0) {
-			while(tmp->left || tmp->right) {
-				if(*input_buff & mask) {
-					tmp = tmp->right;
-				} else {
-					tmp = tmp->left;
-				}
-
-				*input_buff <<= 1;
-				--last_bit_count;
-
-				if(last_bit_count == 0) {
-					break;
-				}
-			}
-
-			if(!tmp->left && !tmp->right) {
-				output_buff[k] = (uint8_t)tmp->num;
-				tmp = root;
-				++k;
-
-				if(k == BUFFER_SIZE) {
-					fwrite(output_buff, sizeof(*output_buff), BUFFER_SIZE, ofile);
-					k = 0;
-				}
-			}
-		}
-
-		if(k != 0) {
-			fwrite(output_buff, sizeof(*output_buff), k, ofile);
-		}
-		delete_huffman_tree(root);
-
-	} else {
+	if(input_buff == NULL) {
 		log_info("Can't allocate memory.");
+		return;
 	}
 
+	uint8_t *output_buff = malloc(sizeof(*output_buff) * BUFFER_SIZE);
+	if(output_buff == NULL) {
+		log_info("Can't allocate memory.");
+		free(input_buff);
+		return;
+	}
+
+	Node *root = build_tree(frequency, DIFFERENT_SYMBOL);
+	Node *tmp = root;
+
+	long count = 0;
+	fread(&count, sizeof(count), 1, ifile);
+
+	uint8_t mask = 0x80;
+	int shift = 0;
+	int size = read_buffer(ifile, input_buff, BUFFER_SIZE);
+	int i = 0;
+	int j = 0;
+
+	while(count != 0 && size != 0) {
+		tmp = root;
+		while(tmp->left || tmp->right) {
+			if(input_buff[i] & mask) {
+				tmp = tmp->right;
+			} else {
+				tmp = tmp->left;
+			}
+
+			input_buff[i] <<= 1;
+			++shift;
+
+			if(shift == BIT_COUNT) {
+				shift = 0;
+				++i;
+
+				if(i == size) {
+					size = read_buffer(ifile, input_buff, BUFFER_SIZE);
+					i = 0;
+				}
+			}
+		}
+
+		output_buff[j] = (uint8_t)tmp->num;
+		++j;
+		--count;
+
+		if(j == BUFFER_SIZE) {
+			fwrite(output_buff, sizeof(*output_buff), BUFFER_SIZE, ofile);
+			j = 0;
+		}
+	}
+
+	if(j != 0) {
+		fwrite(output_buff, sizeof(*output_buff), j, ofile);
+	}
+
+	if(count != 0) {
+		log_info("Incorrect ifile format.");
+	}
+
+	delete_huffman_tree(root);
 	free(input_buff);
 	free(output_buff);
 }
