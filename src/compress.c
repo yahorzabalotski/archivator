@@ -168,14 +168,8 @@ static void write_file(Code *code, FILE *ifile, FILE *ofile)
 			fwrite(&buff, sizeof(buff), 1, ofile);
 		}
 	}
-	/*
-	uint8_t sign_bit = BIT_COUNT - shift;
-	if(shift == BIT_COUNT) {
-		sign_bit = BIT_COUNT;
-	}
-	fwrite(&sign_bit, sizeof(sign_bit), 1, ofile);
-	*/
 }
+
 // debug function 
 void print_frequency(long long *frequency)
 {
