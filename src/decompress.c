@@ -62,20 +62,6 @@ static void read_frequency(long long *frequency, FILE *ifile)
 	free(table);
 }
 
-static long read_buffer(FILE *ifile, uint8_t *buffer, long size)
-{
-	size_t pos = ftell(ifile);
-	fseek(ifile, 0L, SEEK_END);
-	int len = ftell(ifile) - pos;
-
-	long read_count = (size > len) ? (len) : (size);  
-
-	fseek(ifile, pos, SEEK_SET);
-	fread(buffer, sizeof(*buffer), read_count, ifile);
-
-	return read_count;
-}
-
 static void decode_file(long long *frequency, FILE *ifile, FILE *ofile)
 {
 	uint8_t *input_buff = malloc(sizeof(*input_buff) * BUFFER_SIZE);
