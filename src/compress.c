@@ -13,29 +13,22 @@
 #define BUFFER_SIZE 1024
 
 static long long *get_frequency(FILE *ifile);
-static void encoded_file(long long *frequency,  const char *ofile_name, FILE *ifile);
+static void encoded_file(long long *frequency,  FILE *ofile, FILE *ifile);
 static void write_frequency(long long *frequency, FILE *ofile);
 static void write_file(Code *code, FILE *ifile, FILE *ofile);
 
 void print_frequency(long long *frequency);
 static void print_code(long long *frequency, Code *codes);
 
-void compress_file(const char *ifile_name, const char *ofile_name)
+void compress_file(FILE *ifile, FILE *ofile)
 {
-	FILE *ifile = fopen(ifile_name, "r");
-	if(!ifile) {
-		printf("Can't open '%s' file.\n", ifile_name);
-		return ;
-	}
-
 	long long *frequency = get_frequency(ifile);
 	if(frequency) {
 		rewind(ifile);
-		encoded_file(frequency, ofile_name, ifile);
+		encoded_file(frequency, ofile, ifile);
 	} 
 
 	free(frequency);
-	fclose(ifile);
 }
 
 static long long *get_frequency(FILE *ifile)
@@ -69,12 +62,9 @@ static long long *get_frequency(FILE *ifile)
 }
 
 
-static void encoded_file(long long *frequency, const char *ofile_name, FILE *ifile)
+static void encoded_file(long long *frequency, FILE *ofile, FILE *ifile)
 {
-	FILE *ofile = fopen(ofile_name, "w");
-	check(ofile, "Can't create '%s'.", ofile_name);
 	Code *code = generate_code(frequency, DIFFERENT_SYMBOL);
-	//print_code(frequency, code);
 	write_frequency(frequency, ofile);
 	write_file(code, ifile, ofile);
 
@@ -85,8 +75,6 @@ static void encoded_file(long long *frequency, const char *ofile_name, FILE *ifi
 		}
 	}
 	free(code);
-error:
-	fclose(ofile);
 }
 
 static void write_frequency(long long *frequency, FILE *ofile)

@@ -1,5 +1,7 @@
 #ifndef _decompress_h
 #define _decompress_h
 
-void decompress_file(const char *ifile, const char *ofile);
+#include <stdio.h>
+
+void decompress_file(FILE *ifile, FILE *ofile);
 #endif

@@ -13,31 +13,14 @@
 static void read_frequency(long long *frequency, FILE *ifile);
 static void decode_file(long long *frequency, FILE *ifile, FILE *ofile);
 
-void decompress_file(const char *ifile_name, const char *ofile_name)
+void decompress_file(FILE *ifile, FILE *ofile)
 {
-	FILE *ifile = fopen(ifile_name, "r");
-	if(ifile == NULL) {
-		log_info("Can't open '%s' file.", ifile_name);
-		return;
-	}
-
-	FILE *ofile = fopen(ofile_name, "w");
-	if(ofile == NULL) {
-		log_info("Can't open '%s' file.", ofile_name);
-		fclose(ifile);
-		return;
-	}
-	
-
 	long long *frequency = malloc(sizeof(*frequency) * DIFFERENT_SYMBOL);
 	if(frequency != NULL) {
 		read_frequency(frequency, ifile);
 		decode_file(frequency, ifile, ofile);
 		free(frequency);
 	}
-
-	fclose(ofile);
-	fclose(ifile);
 }
 
 static void read_frequency(long long *frequency, FILE *ifile)
