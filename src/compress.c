@@ -126,7 +126,6 @@ static void write_file(Code *code, FILE *ifile, FILE *ofile)
 	fwrite(&len, sizeof(len), 1, ofile);
 
 	uint8_t temp = 0;
-	uint8_t buff = 0;
 	int shift = BIT_COUNT;
 	int size = read_buffer(ifile, input_buff, BUFFER_SIZE);
 	int k = 0;
