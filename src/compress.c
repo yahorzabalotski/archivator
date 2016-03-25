@@ -181,23 +181,3 @@ static void write_file(Code *code, FILE *ifile, FILE *ofile)
 	free(input_buff);
 	free(output_buff);
 }
-
-// debug function 
-void print_frequency(long long *frequency)
-{
-	for(int i = 0; i < DIFFERENT_SYMBOL; i++) {
-		if(frequency[i]) {
-			printf("%c - %lld\n", i, frequency[i]);
-		}
-	}
-}
-
-static void print_code(long long *frequency, Code *codes)
-{
-	for(int i = 0; i < DIFFERENT_SYMBOL; i++) {
-		if(frequency[i]) {
-			printf("%c - %lld\n", i, frequency[i]);
-			Code_print(&codes[i]);
-		}
-	}
-}
