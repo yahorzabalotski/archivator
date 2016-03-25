@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "compress.h"
@@ -33,7 +34,7 @@ int main(int argc, char *argv[])
 		print_usage(name, compress, decompress);
 	}
 
-	return 0;
+	exit(0);
 }
 
 static void print_usage(const char * const name, const char * const compress,
