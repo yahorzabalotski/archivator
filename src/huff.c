@@ -9,7 +9,7 @@ static void print_usage(const char * const name, const char * const compress,
 
 int main(int argc, char *argv[])
 {
-	const char *name = argv[0];
+	const char * const name 		= argv[0];
 	const char * const compress 	= "-c";
 	const char * const decompress 	= "-x";
 
