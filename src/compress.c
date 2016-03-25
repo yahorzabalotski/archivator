@@ -13,7 +13,6 @@
 #define BUFFER_SIZE 1024
 
 static long long *get_frequency(FILE *ifile);
-static void encoded_file(long long *frequency,  FILE *ofile, FILE *ifile);
 static void write_frequency(long long *frequency, FILE *ofile);
 static void write_file(Code *code, FILE *ifile, FILE *ofile);
 
@@ -23,10 +22,23 @@ static void print_code(long long *frequency, Code *codes);
 void compress_file(FILE *ifile, FILE *ofile)
 {
 	long long *frequency = get_frequency(ifile);
-	if(frequency) {
-		rewind(ifile);
-		encoded_file(frequency, ofile, ifile);
-	} 
+	if(frequency == NULL) {
+		log_err("Can't calculate frequency.");
+		return;
+	}
+
+	rewind(ifile);
+	Code *code = generate_code(frequency, DIFFERENT_SYMBOL);
+	write_frequency(frequency, ofile);
+	write_file(code, ifile, ofile);
+
+	// free code
+	for(int i = 0; i < DIFFERENT_SYMBOL; i++) {
+		if(code[i].buff) {
+			free(code[i].buff);
+		}
+	}
+	free(code);
 
 	free(frequency);
 }
@@ -59,22 +71,6 @@ static long long *get_frequency(FILE *ifile)
 	free(buffer);
 	fseek(ifile, pos, SEEK_SET); //restore file pointer
 	return frequency;
-}
-
-
-static void encoded_file(long long *frequency, FILE *ofile, FILE *ifile)
-{
-	Code *code = generate_code(frequency, DIFFERENT_SYMBOL);
-	write_frequency(frequency, ofile);
-	write_file(code, ifile, ofile);
-
-	// free code
-	for(int i = 0; i < DIFFERENT_SYMBOL; i++) {
-		if(code[i].buff) {
-			free(code[i].buff);
-		}
-	}
-	free(code);
 }
 
 static void write_frequency(long long *frequency, FILE *ofile)
