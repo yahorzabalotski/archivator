@@ -49,21 +49,16 @@ static long long *get_frequency(FILE *ifile)
 	long pos = ftell(ifile); // save file pointer
 
 	uint8_t *buffer = malloc(sizeof(*buffer) * BUFFER_SIZE);
-	if(buffer != NULL) {
-		long len = get_file_size(ifile);
 
-		for(int j = 0; j < len / BUFFER_SIZE; j++) {
-			fread(buffer, sizeof(*buffer), BUFFER_SIZE, ifile);
-			for(int i = 0; i < BUFFER_SIZE; i++) {
+	if(buffer != NULL) {
+		long len = 0;
+
+		while((len = read_buffer(ifile, buffer, sizeof(*buffer) * BUFFER_SIZE))) { 
+			for(int i = 0; i < len; i++) {
 				++frequency[buffer[i]];
 			}
 		}
 
-		int last = len % BUFFER_SIZE;
-		fread(buffer, sizeof(*buffer), last, ifile);
-		for(int i = 0; i < last; i++) {
-			++frequency[buffer[i]];
-		}
 	} else {
 		puts("Can't allocate memory for buffer.");
 	}
