@@ -16,8 +16,6 @@ static long long *get_frequency(FILE *ifile);
 static void write_frequency(long long *frequency, FILE *ofile);
 static void write_file(Code *code, FILE *ifile, FILE *ofile);
 
-void print_frequency(long long *frequency);
-
 void compress_file(FILE *ifile, FILE *ofile)
 {
 	long long *frequency = get_frequency(ifile);
