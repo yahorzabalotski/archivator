@@ -3,5 +3,8 @@
 
 #include <stdio.h>
 
+#include "extention.h"
+
 void decompress_file(FILE *ifile, FILE *ofile);
+
 #endif

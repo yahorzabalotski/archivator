@@ -1,3 +1,10 @@
+/**
+ * @file compress.c
+ * @brief module which implement compres.h file
+ * @author Yahor Zabolotski
+ * @date 2016-03-28
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -10,10 +17,31 @@
 #include "code.h"
 #include "utill.h"
 
-#define BUFFER_SIZE 1024
-
+/**
+ * @brief calculate byte frequency in the ifile
+ *
+ * @param ifile file pointer, in which frequency are calculate; should be open for read
+ *
+ * @return array with byte frequency; amount of elements equal to DIFFERENT_SYMBOL
+ */
 static long long *get_frequency(FILE *ifile);
+
+/**
+ * @brief write byte frequency in ifile
+ *
+ * @param frequency pointer to byte frequency array with DIFFERENT_SYMBOL amount of element
+ * @param ofile pointer to file, where frequency will be write
+ */
 static void write_frequency(long long *frequency, FILE *ofile);
+
+/**
+ * @brief encodes ifile to ofile according code for bytes
+ *
+ * @param code pointer to array of Code, which contain in code[byte] Code for this byte;
+ * the array should be DIFFERENT_SYMBOL size
+ * @param ifile pointer to source file; should be open for read
+ * @param ofile pointer to result file; should be open for write
+ */
 static void write_file(Code *code, FILE *ifile, FILE *ofile);
 
 void compress_file(FILE *ifile, FILE *ofile)

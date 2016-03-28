@@ -5,11 +5,9 @@
 #include "dbg.h"
 #include "code.h"
 #include "pqueue.h"
+#include "extention.h"
 
 #include <limits.h>
-
-#define BIT_COUNT 8
-
 
 static int Node_compare(const void *a, const void *b)
 {

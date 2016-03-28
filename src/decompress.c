@@ -3,12 +3,9 @@
 #include <stdint.h>
 
 #include "decompress.h"
-#include "compress.h"
 #include "dbg.h"
 #include "utill.h"
 #include "code.h"
-
-#define BUFFER_SIZE 1024
 
 static void read_frequency(long long *frequency, FILE *ifile);
 static void decode_file(long long *frequency, FILE *ifile, FILE *ofile);

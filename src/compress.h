@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 
+#include "extention.h"
+
 /**
  * @brief compress ifile to ofile
  *
@@ -17,8 +19,5 @@
  * @param ofile output file pointer, should be open for write
  */
 void compress_file(FILE *ifile, FILE *ofile);
-
-#define DIFFERENT_SYMBOL 256
-#define BIT_COUNT 8
 
 #endif
