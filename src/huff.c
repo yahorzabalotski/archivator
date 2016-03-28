@@ -1,3 +1,10 @@
+/**
+ * @file huff.c
+ * @brief This file is the main unit of the application.
+ * @author Yahor Zabolotski
+ * @date 2016-03-28
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,9 +13,22 @@
 #include "decompress.h"
 #include "dbg.h"
 
+/**
+ * @brief print usage message
+ *
+ * @param name a name of the program
+ * @param compress a name of the compression option
+ * @param decompress a name of the decompression option
+ */
 static void print_usage(const char * const name, const char * const compress,
 		const char * const decompress);
 
+/**
+ * @brief Main function of the software.
+ *
+ * Parse command line arguments, check option name and call corresponding 
+ * compress or decompress function.
+ */
 int main(int argc, char *argv[])
 {
 	const char * const name 		= argv[0];
