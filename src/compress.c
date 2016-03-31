@@ -161,12 +161,14 @@ static void write_file(Code *code, FILE *ifile, FILE *ofile)
 
 	uint8_t temp = 0;
 	int shift = BIT_COUNT;
-	int size = read_buffer(ifile, input_buff, BUFFER_SIZE);
+//	int size = read_buffer(ifile, input_buff, BUFFER_SIZE);
+	int size = get_file_size(ifile) / BUFFER_SIZE;
 	int k = 0;
 	Code *byte = NULL;
 
-	while(size) {
-		for(long i = 0; i < size; i++) {
+	for(; size > 0; size--) {
+		fread(input_buff, sizeof(*input_buff), BUFFER_SIZE, ifile);
+		for(long i = 0; i < BUFFER_SIZE; i++) {
 			byte = &code[input_buff[i]];
 			
 			for(int j = 0; j < byte->len - 1; j++) {
@@ -201,8 +203,44 @@ static void write_file(Code *code, FILE *ifile, FILE *ofile)
 				output_buff[k] <<= shift - byte->free_bit;
 			}
 		}
+	}
 
-		size = read_buffer(ifile, input_buff, BUFFER_SIZE);
+	size = get_file_size(ifile); 
+	fread(input_buff, sizeof(*input_buff), size, ifile);
+	for(long i = 0; i < size; i++) {
+		byte = &code[input_buff[i]];
+		
+		for(int j = 0; j < byte->len - 1; j++) {
+			temp = byte->buff[j];
+			temp >>= BIT_COUNT - shift;
+			output_buff[k] = output_buff[k] | temp;
+			++k;
+			if(k == BUFFER_SIZE) {
+				fwrite(output_buff, sizeof(*output_buff), BUFFER_SIZE, ofile);
+				memset(output_buff, 0, sizeof(*output_buff) * BUFFER_SIZE);
+				k = 0;
+			}
+			output_buff[k] = byte->buff[j];
+			output_buff[k] <<= shift;
+		}	
+
+		temp = byte->buff[byte->len - 1];
+		temp >>= BIT_COUNT - shift;
+		output_buff[k] = output_buff[k] | temp;
+		shift -= BIT_COUNT - byte->free_bit;
+
+		if(shift <= 0) {
+			++k;
+			if(k == BUFFER_SIZE) {
+				fwrite(output_buff, sizeof(*output_buff), BUFFER_SIZE, ofile);
+				memset(output_buff, 0, sizeof(*output_buff) * BUFFER_SIZE);
+				k = 0;
+			}
+
+			output_buff[k] = byte->buff[byte->len - 1];
+			shift += BIT_COUNT;
+			output_buff[k] <<= shift - byte->free_bit;
+		}
 	}
 
 	if(shift != BIT_COUNT) {
