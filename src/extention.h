@@ -10,7 +10,7 @@
 
 #define BIT_COUNT 8 		///< the bit count in the byte
 #define BYTE_COUNT 256		///< different byte count
-#define BUFFER_SIZE 1024	///< size of read and write buffers 
+#define BUFFER_SIZE 4096	///< size of read and write buffers 
 
 #define DIFFERENT_SYMBOL BYTE_COUNT ///< alphabet size for the Huffman algorithm
 
