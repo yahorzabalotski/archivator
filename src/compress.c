@@ -30,9 +30,10 @@ static long long *get_frequency(FILE *ifile);
  * @brief write byte frequency in ifile
  *
  * @param frequency pointer to byte frequency array with DIFFERENT_SYMBOL amount of element
+ * @param f_size size of the frequency array, should be multipe of the number of bits
  * @param ofile pointer to file, where frequency will be write
  */
-static void write_frequency(long long *frequency, FILE *ofile);
+static void write_frequency(long long *frequency, int f_size, FILE *ofile);
 
 /**
  * @brief encodes ifile to ofile according code for bytes
@@ -54,7 +55,7 @@ void compress_file(FILE *ifile, FILE *ofile)
 
 	rewind(ifile);
 	Code *code = generate_code(frequency, DIFFERENT_SYMBOL);
-	write_frequency(frequency, ofile);
+	write_frequency(frequency, DIFFERENT_SYMBOL, ofile);
 	write_file(code, ifile, ofile);
 
 	// free code
@@ -81,12 +82,19 @@ static long long *get_frequency(FILE *ifile)
 	uint8_t *buffer = malloc(sizeof(*buffer) * BUFFER_SIZE);
 
 	if(buffer != NULL) {
-		long len = 0;
+		long len = get_file_size(ifile);
 
-		while((len = read_buffer(ifile, buffer, sizeof(*buffer) * BUFFER_SIZE))) { 
-			for(int i = 0; i < len; i++) {
-				++frequency[buffer[i]];
+		for(int i = len / BUFFER_SIZE; i > 0; i--) {
+			fread(buffer, sizeof(*buffer), BUFFER_SIZE, ifile);
+			for(int j = BUFFER_SIZE - 1; j >= 0; j--) {
+				++frequency[buffer[j]];
 			}
+		}
+
+		int size = len % BUFFER_SIZE;
+		fread(buffer, sizeof(*buffer), size, ifile);
+		for(int i = size - 1; i >= 0; i--) {
+			++frequency[buffer[i]];
 		}
 
 	} else {
@@ -98,9 +106,9 @@ static long long *get_frequency(FILE *ifile)
 	return frequency;
 }
 
-static void write_frequency(long long *frequency, FILE *ofile)
+static void write_frequency(long long *frequency, int f_size, FILE *ofile)
 {
-	int size = DIFFERENT_SYMBOL / BIT_COUNT;
+	int size = f_size / BIT_COUNT;
 	uint8_t *table = calloc(size, sizeof(*table)); 
 	if(table == NULL) {
 		log_info("Can't allocate memory for bit table.");
@@ -119,7 +127,7 @@ static void write_frequency(long long *frequency, FILE *ofile)
 
 	fwrite(table, sizeof(*table), size, ofile);
 
-	for(i = 0; i < DIFFERENT_SYMBOL; i++) {
+	for(i = 0; i < f_size; i++) {
 		if(frequency[i]) {
 			fwrite(&frequency[i], sizeof(*frequency), 1, ofile);
 		}
