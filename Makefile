@@ -5,7 +5,7 @@ SRCS := $(wildcard $(SRCDIR)/*.c)
 OBJS := $(patsubst $(SRCDIR)/%.c, $(BUILDDIR)/%.o, $(SRCS))
 
 DEPFLAGS = -MT $@ -MMD -MP -MF $(BUILDDIR)/$*.Td
-CFLAGS := -Wall
+CFLAGS := -Wall -O3
 TARGET := huff 
 
 default: $(TARGET)
