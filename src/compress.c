@@ -136,11 +136,6 @@ static void write_frequency(long long *frequency, int f_size, FILE *ofile)
 	free(table);
 }
 
-
-/*
- * make read_buffer and write_buffer to performe systems calls time
- */
-
 static void write_file(Code *code, FILE *ifile, FILE *ofile)
 {
 	uint8_t *input_buff = malloc(sizeof(*input_buff) * BUFFER_SIZE);
