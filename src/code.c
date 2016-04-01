@@ -9,18 +9,20 @@
 
 #include <limits.h>
 
+/**
+ * @brief Compare two Node element.
+ *
+ * @param a pointer to the first Node element
+ * @param b pointer to the second Node element
+ *
+ * @return 1 if *a > *b, 0 if *a == *b, -1 either
+ */
 static int Node_compare(const void *a, const void *b)
 {
-	const Node *node_a = a;
-	const Node *node_b = b;
+	const Node *pa = a;
+	const Node *pb = b;
 	
-	if(node_a->amount < node_b->amount) {
-		return -1;
-	} else if(node_a->amount == node_b->amount) {
-		return 0;
-	} else {
-		return 1;
-	}
+	return (pa->amount > pb->amount) - (pb->amount > pa->amount);
 }
 
 static Node *Node_create(long long amount, int num, Code *code)
