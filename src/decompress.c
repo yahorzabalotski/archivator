@@ -64,46 +64,80 @@ static void decode_file(long long *frequency, FILE *ifile, FILE *ofile)
 	fread(&count, sizeof(count), 1, ifile);
 
 	uint8_t mask = 0x80;
+	int size = get_file_size(ifile);
 	int shift = 0;
-	int size = read_buffer(ifile, input_buff, BUFFER_SIZE);
 	int i = 0;
 	int j = 0;
+	int k = 0;
 
-	while(count != 0 && size != 0) {
-		tmp = root;
-		while(tmp->left || tmp->right) {
-			if(input_buff[i] & mask) {
-				tmp = tmp->right;
-			} else {
-				tmp = tmp->left;
-			}
+	int full_buffer_count = size / BUFFER_SIZE;
+	if(size % BUFFER_SIZE == 0) {
+		--size;
+	}
 
-			input_buff[i] <<= 1;
-			++shift;
+	int output_buff_write_count = 0;
 
-			if(shift == BIT_COUNT) {
-				shift = 0;
-				++i;
+	for(i = 0; i < full_buffer_count; ++i) {
+		fread(input_buff, sizeof(*input_buff), BUFFER_SIZE, ifile);
 
-				if(i == size) {
-					size = read_buffer(ifile, input_buff, BUFFER_SIZE);
-					i = 0;
+		for(j = 0; j < BUFFER_SIZE; ++j) {
+			for(shift = BIT_COUNT; shift > 0; --shift) {
+				tmp = (input_buff[j] & mask) ? (tmp->right) : (tmp->left);
+				input_buff[j] <<= 1;
+
+				if(tmp->left == NULL) {
+					output_buff[k] = (uint8_t) tmp->num;
+					tmp = root;
+					if(++k == BUFFER_SIZE) {
+						++output_buff_write_count;
+						fwrite(output_buff, sizeof(*output_buff), k, ofile);
+						k = 0;
+					}
 				}
 			}
 		}
+	}
 
-		output_buff[j] = (uint8_t)tmp->num;
-		++j;
-		--count;
+	count -= output_buff_write_count * BUFFER_SIZE + k;
 
-		if(j == BUFFER_SIZE) {
-			fwrite(output_buff, sizeof(*output_buff), BUFFER_SIZE, ofile);
-			j = 0;
+	shift = 0;
+
+	int last_buffer_size = size % BUFFER_SIZE;
+	if(last_buffer_size == 0) {
+		last_buffer_size = BUFFER_SIZE;
+	}
+
+	fread(input_buff, sizeof(*input_buff), size % BUFFER_SIZE, ifile);
+
+	for(j = 0; j < last_buffer_size && count > 0;) {
+		for(; shift < BIT_COUNT;) {
+			tmp = (input_buff[j] & mask) ? (tmp->right) : (tmp->left);
+			input_buff[j] <<= 1;
+			++shift;
+
+			if(tmp->left == NULL) {
+				output_buff[k] = (uint8_t) tmp->num;
+				tmp = root;
+				--count;
+				++k;
+				break;
+			}
+
+		}
+
+		if(k == BUFFER_SIZE) {
+			fwrite(output_buff, sizeof(*output_buff), k, ofile);
+			k = 0;
+		}
+
+		if(shift == BIT_COUNT) {
+			shift = 0;
+			++j;
 		}
 	}
 
-	if(j != 0) {
-		fwrite(output_buff, sizeof(*output_buff), j, ofile);
+	if(k != 0) {
+		fwrite(output_buff, sizeof(*output_buff), k, ofile);
 	}
 
 	if(count != 0) {
