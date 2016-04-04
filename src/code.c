@@ -74,55 +74,32 @@ static Node *build_huffman_tree(pQueue *pq, int size)
 	return left;
 }
 
-static uint8_t convert(char *str)
-{
-	uint8_t chunk = 0;
-	int i;
-	for(i = 0; str[i] != '\0' && i < BIT_COUNT; i++) {
-		chunk <<= 1;
-		if(str[i] == '1') {
-			chunk += 1;
-		}
-	}
-
-	chunk <<= (BIT_COUNT - i);
-
-	return chunk;
-}
-
-static void get_code(Code *code, char *str)
-{
-	int len = strlen(str);
-	code->len = len / BIT_COUNT; 
-
-	if(len % BIT_COUNT) {
-		code->len += 1;
-	}
-
-	code->free_bit = code->len * BIT_COUNT - len;
-
-	code->buff = malloc(sizeof(*code->buff) * code->len);
-	for(int i = 0; i < code->len; i++) {
-		code->buff[i] = convert(str);
-		str += BIT_COUNT;
-	}
-}
-
-static void appropriate_char_code(Node *root, char *str)
+static void appropriate_char_code(Node *root, uint8_t *buff, int sign_bit_count)
 {
 	if(root) {
+		int len = (sign_bit_count + BIT_COUNT - 1) / BIT_COUNT;
 		if(!root->left && !root->right) {
-			get_code(root->code, str);
+			root->code->buff = malloc(sizeof(*(root->code->buff)) * len);
+			root->code->len = len;
+			root->code->free_bit = BIT_COUNT - sign_bit_count % BIT_COUNT;
+			if(root->code->free_bit == BIT_COUNT) {
+				root->code->free_bit = 0;
+			}
+			memcpy(root->code->buff, buff, len);
+			uint8_t mask = 0xFF >> (BIT_COUNT - root->code->free_bit);
+			root->code->buff[len - 1] &= ~mask;
+			/*
+			for(int j = root->code->free_bit - 1; j >= 0; j--) {
+				root->code->buff[len - 1] &= ~(1 << j);
+			}
+			*/
 		}
-		int len = strlen(str);
-		char *new_code = malloc(sizeof(*new_code) * (len + 2));
-		strcpy(new_code, str);
-		new_code[len + 1] = '\0';
-		new_code[len] = '0';
-		appropriate_char_code(root->left, new_code);
-		new_code[len] = '1';
-		appropriate_char_code(root->right, new_code);
-		free(new_code);
+		
+		buff[sign_bit_count / BIT_COUNT] &= ~(1 << (BIT_COUNT - sign_bit_count % BIT_COUNT - 1));
+		appropriate_char_code(root->left, buff, sign_bit_count + 1);
+
+		buff[sign_bit_count / BIT_COUNT] |= (1 << (BIT_COUNT - sign_bit_count % BIT_COUNT - 1));
+		appropriate_char_code(root->right, buff, sign_bit_count + 1);
 	}
 }
 
@@ -178,7 +155,8 @@ Code *generate_code(long long *frequency, int size)
 	Code *codes = push_init_nodes(pq, frequency, size);
 	if(codes != NULL) {
 		Node *root = build_huffman_tree(pq, size);
-		appropriate_char_code(root, "");
+		uint8_t buff[DIFFERENT_SYMBOL * 2] = {};
+		appropriate_char_code(root, buff, 0);
 		delete_huffman_tree(root);
 	}
 	pQueue_delete(pq);
