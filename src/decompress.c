@@ -44,18 +44,8 @@ static void read_frequency(long long *frequency, FILE *ifile)
 
 static void decode_file(long long *frequency, FILE *ifile, FILE *ofile)
 {
-	uint8_t *input_buff = malloc(sizeof(*input_buff) * BUFFER_SIZE);
-	if(input_buff == NULL) {
-		log_info("Can't allocate memory.");
-		return;
-	}
-
-	uint8_t *output_buff = malloc(sizeof(*output_buff) * BUFFER_SIZE);
-	if(output_buff == NULL) {
-		log_info("Can't allocate memory.");
-		free(input_buff);
-		return;
-	}
+	uint8_t input_buff[BUFFER_SIZE] = {};
+	uint8_t output_buff[BUFFER_SIZE] = {};
 
 	Node *root = build_tree(frequency, DIFFERENT_SYMBOL);
 	Node *tmp = root;
@@ -119,15 +109,13 @@ static void decode_file(long long *frequency, FILE *ifile, FILE *ofile)
 				output_buff[k] = (uint8_t) tmp->num;
 				tmp = root;
 				--count;
-				++k;
+				if(++k == BUFFER_SIZE) {
+					fwrite(output_buff, sizeof(*output_buff), k, ofile);
+					k = 0;
+				}
 				break;
 			}
 
-		}
-
-		if(k == BUFFER_SIZE) {
-			fwrite(output_buff, sizeof(*output_buff), k, ofile);
-			k = 0;
 		}
 
 		if(shift == BIT_COUNT) {
@@ -145,6 +133,4 @@ static void decode_file(long long *frequency, FILE *ifile, FILE *ofile)
 	}
 
 	delete_huffman_tree(root);
-	free(input_buff);
-	free(output_buff);
 }
