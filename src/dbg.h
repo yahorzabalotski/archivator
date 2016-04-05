@@ -1,3 +1,9 @@
+/**
+ * @file dbg.h
+ * @brief debug masroc
+ * @date 2016-04-05
+ */
+
 #ifndef __dbg_h__
 #define __dbg_h__
 

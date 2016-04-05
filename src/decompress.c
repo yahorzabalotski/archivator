@@ -1,3 +1,9 @@
+/**
+ * @file decompress.c
+ * @brief decompress.h implementation
+ * @author Yahor Zabolotski
+ * @date 2016-04-05
+ */
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -7,7 +13,21 @@
 #include "utill.h"
 #include "code.h"
 
+/**
+ * @brief read frequency from the file
+ *
+ * @param frequency pointer to the frequency buffer, which should be no less than DIFFERENT_SYMBOL
+ * @param ifile 	input file
+ */
 static void read_frequency(long long *frequency, FILE *ifile);
+
+/**
+ * @brief decode code from file and write source symbols to ofile
+ *
+ * @param frequency array of frequency for every bytes, amount of element equal DIFFERENT_SYMBOL
+ * @param ifile input file
+ * @param ofile output file
+ */
 static void decode_file(long long *frequency, FILE *ifile, FILE *ofile);
 
 void decompress_file(FILE *ifile, FILE *ofile)
