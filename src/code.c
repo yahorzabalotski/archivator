@@ -25,6 +25,15 @@ static int Node_compare(const void *a, const void *b)
 	return (pa->amount > pb->amount) - (pb->amount > pa->amount);
 }
 
+/**
+ * @brief create Node struct
+ *
+ * @param amount 	frequency of num symbol
+ * @param num		symbol
+ * @param code		pointer to the Huffman code for num
+ *
+ * @return pointer to allocated struct
+ */
 static Node *Node_create(long long amount, int num, Code *code)
 {
 	Node *node = malloc(sizeof(*node));
@@ -39,7 +48,14 @@ static Node *Node_create(long long amount, int num, Code *code)
 	return node;
 }
 
-static Node *build_huffman_tree(pQueue *pq, int size)
+/**
+ * @brief build binary tree
+ *
+ * @param pq 	pointer to the initial nodes in the priority queue
+ *
+ * @return 		pointer to root of the tree
+ */
+static Node *build_huffman_tree(pQueue *pq)
 {
 	Node *left = pQueue_pop(pq);
 	if(left == NULL) {
@@ -74,6 +90,13 @@ static Node *build_huffman_tree(pQueue *pq, int size)
 	return left;
 }
 
+/**
+ * @brief calculate code for tree son 
+ *
+ * @param root root of the tree
+ * @param buff clear buffer, which have enough space for largest code
+ * @param sign_bit_count number of sing bit in buff
+ */
 static void appropriate_char_code(Node *root, uint8_t *buff, int sign_bit_count)
 {
 	if(root) {
@@ -88,11 +111,6 @@ static void appropriate_char_code(Node *root, uint8_t *buff, int sign_bit_count)
 			memcpy(root->code->buff, buff, len);
 			uint8_t mask = 0xFF >> (BIT_COUNT - root->code->free_bit);
 			root->code->buff[len - 1] &= ~mask;
-			/*
-			for(int j = root->code->free_bit - 1; j >= 0; j--) {
-				root->code->buff[len - 1] &= ~(1 << j);
-			}
-			*/
 		}
 		
 		buff[sign_bit_count / BIT_COUNT] &= ~(1 << (BIT_COUNT - sign_bit_count % BIT_COUNT - 1));
@@ -112,6 +130,15 @@ void delete_huffman_tree(Node *root)
 	}
 }
 
+/**
+ * @brief push init frequencyes to the priority queue
+ *
+ * @param pq priority queue
+ * @param frequency initial frequencyes
+ * @param size count of init frequencyes
+ *
+ * @return pointer to appropriate codes for frequencyes
+ */
 static Code* push_init_nodes(pQueue *pq, long long *frequency, int size)
 {
 	if(pq == NULL) {
@@ -154,7 +181,7 @@ Code *generate_code(long long *frequency, int size)
 	
 	Code *codes = push_init_nodes(pq, frequency, size);
 	if(codes != NULL) {
-		Node *root = build_huffman_tree(pq, size);
+		Node *root = build_huffman_tree(pq);
 		uint8_t buff[DIFFERENT_SYMBOL * 2] = {};
 		appropriate_char_code(root, buff, 0);
 		delete_huffman_tree(root);
@@ -173,7 +200,7 @@ Node *build_tree(long long *frequency, int size)
 		} 	
 	}
 
-	Node *root = build_huffman_tree(pq, size);
+	Node *root = build_huffman_tree(pq);
 	pQueue_delete(pq);
 
 	return root;
