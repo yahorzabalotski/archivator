@@ -22,7 +22,7 @@ make
 
 %install
 mkdir -p %{buildroot}%{_bindir}
-cp -f build/huff %{buildroot}%{_bindir}/huff
+cp -f huff %{buildroot}%{_bindir}/huff
 
 %clean
 rm -rf %{buildroot}
