@@ -58,10 +58,8 @@ int main(int argc, char *argv[])
 	}
 
 	if(!strcmp(compress, opt)) {
-		printf("Compress %s to %s ...\n", ifile_name, ofile_name);
 		compress_file(ifile, ofile);
 	} else if(!strcmp(decompress, opt)) {
-		printf("Decompress %s to %s ...\n", ifile_name, ofile_name);
 		decompress_file(ifile, ofile);	
 	} else {
 		printf("Can't recognized %s option.\n", opt);
